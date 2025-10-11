@@ -49,6 +49,7 @@ If you want to test it too:
 
 ## 🧠 Next Steps
 I plan to:
+- Learn how to write unit tests.
 - Improve voting logic and add more DAO features.
 - Keep learning Solidity and smart contract security!
 
