@@ -28,7 +28,7 @@ contract GrantVault is ReentrancyGuard {
         manager = _manager; // deployer is the default manager
     }
 //==========modifier=======================
-// @ notice pre check
+// @ notice pre check for access control (role based)
 
     modifier onlyManager() {
         if (msg.sender != manager) revert NotManager();
@@ -38,14 +38,17 @@ contract GrantVault is ReentrancyGuard {
 //  @notice  deposit ETH by calling this function or the receive().
 
     function fundVault() external payable {
+
         if (msg.value == 0) revert DepositMustBeGreaterThanZero(); // caller must deposit some ETH
+
         totalFunds += msg.value;
+
         unchecked{totalFunds+=msg.value;} // ensures no overflows
 
         emit VaultFunded(msg.sender, msg.value);
     }
 
-// @notice once a project has been approved and its proposal executed, the IncubatorManager.sol contract calls this func
+// @notice once a project has been approved and its proposal executed, the IncubatorManager.sol contract calls this func and dispenses funds.
 //@ notice the use of the CEI pattern to protect against reentrancy attacks, esp when making low level calls
 //@ notice using ReentrancyGuard without upholding the CEI (checks, effects, and interactions) pattern is tatamount to not applying it.
 
