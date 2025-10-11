@@ -104,6 +104,7 @@ contract IncubatorManager {
     }
 
 /// @ notice execute a proposal after voting ends
+// @notice ensure the voter has not voted already and voting is ongoing.
 
     function executeProposal(uint256 proposalId) external {
         Proposal storage p = proposals[proposalId];
@@ -114,10 +115,11 @@ contract IncubatorManager {
         p.executed = true;
 
         if (passed) {
-// @notice retrieve the Id of the project whose proposal has passed and has been executed 
+// @notice retrieve the Id of the project whose proposal has passed and has been executed => Call ProjectRegistry.sol
+
             ProjectRegistry.Project memory project = registry.getProject(p.projectId);
 
-//@notice call vault to release funds to the project
+//@notice call GrantVault.sol to release funds to the project
             vault.releaseGrant(p.projectId, payable(project.owner), p.amount);
         }
 
