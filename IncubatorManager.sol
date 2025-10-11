@@ -35,13 +35,14 @@ contract IncubatorManager {
     uint256 public nextProposalId;
 
 //============events============
-//@notice events are essential in upholding the transparency of smart contracts.
+//@notice events are essential in upholding the transparency of smart contracts, and the processes they enable.
 
     event ProposalCreated(uint256 indexed id, uint256 indexed projectId, address proposer);
     event Voted(uint256 indexed id, address voter, bool support, uint256 weight);
     event ProposalExecuted(uint256 indexed id, bool passed);
 
 //===============custom errors====================
+//@notice reverting custom errors is cheaper than reverting strings errors contained in require().
 
     error InsufficientIREP();
     error AlreadyVoted();
@@ -60,8 +61,8 @@ contract IncubatorManager {
     }
 //=================core functions============
 // @ notice create a funding proposal for an approved project. 
-//@notice check whether caller has sufficient IREP TO PROCEED.
-//@notice check whether the project is registered by calling ProjectRegistry.sol
+//@notice check whether caller has sufficient IREP TO PROCEED by calling IREP.balanceOf().
+//@notice check whether the project is registered by calling Registry.getProject().
 //@ notice an event is emitted upon the creation of a qualifying project.
 
     function createProposal(uint256 projectId, uint256 amount) external {
