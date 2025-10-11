@@ -7,7 +7,9 @@ import "./GrantVault.sol";
 
 /// @title IncubatorManager
 /// @notice Coordinates projects, proposals, voting, rewards, and ETH grant distribution.
+
 contract IncubatorManager {
+
     struct Proposal {
         uint256 id;
         uint256 projectId;
@@ -18,7 +20,7 @@ contract IncubatorManager {
         uint256 deadline;
         bool executed;
     }
-//==========state============
+//==========state/storage============
 
     IncubatorToken public immutable IREP;
     GrantVault public immutable vault;
@@ -33,6 +35,7 @@ contract IncubatorManager {
     uint256 public nextProposalId;
 
 //============events============
+//@notice events are essential in upholding the transparency of smart contracts.
 
     event ProposalCreated(uint256 indexed id, uint256 indexed projectId, address proposer);
     event Voted(uint256 indexed id, address voter, bool support, uint256 weight);
@@ -48,6 +51,7 @@ contract IncubatorManager {
     error NotApprovedProject();
 
 //================constructor==================================
+@notice the constructor (in this case) initializes the addresses of imported contracts (linking).
 
     constructor(address _IREP, address payable _vault, address _registry) {
         IREP = IncubatorToken(_IREP);
@@ -55,7 +59,10 @@ contract IncubatorManager {
         registry = ProjectRegistry(_registry);
     }
 //=================core functions============
-// @ notice create a funding proposal for an approved project
+// @ notice create a funding proposal for an approved project. 
+//@notice check whether caller has sufficient IREP TO PROCEED.
+//@notice check whether the project is registered by calling ProjectRegistry.sol
+//@ notice an event is emitted upon the creation of a qualifying project.
 
     function createProposal(uint256 projectId, uint256 amount) external {
         if (IREP.balanceOf(msg.sender) < MIN_IREP_TO_PROPOSE) revert InsufficientIREP();
@@ -79,6 +86,10 @@ contract IncubatorManager {
     }
 
 //@ notice vote on a proposal 
+// @ notice check whether caller has the minimum required IREP TO PROCEED WITH ACTION
+//@ notice record that caller has voted
+//@ notice record that caller has voted
+// @notice emit an event to frontends. This also ensures transparency in the process.
 
     function vote(uint256 proposalId, bool support) external {
         Proposal storage p = proposals[proposalId];
@@ -86,12 +97,10 @@ contract IncubatorManager {
         if (block.number > p.deadline) revert VotingClosed();
         if (hasVoted[proposalId][msg.sender]) revert AlreadyVoted();
 
-// @ notice check whether caller has the minimum required IREP TO PROCEED WITH ACTION
 
         uint256 weight = IREP.balanceOf(msg.sender);
         if (weight < MIN_IREP_TO_VOTE) revert InsufficientIREP();
 
-//@ notice record that caller has voted
      hasVoted[proposalId][msg.sender] = true;
 
         if (support) {
@@ -99,12 +108,14 @@ contract IncubatorManager {
         } else {
             p.againstVotes += weight;
         }
-// @notice emit an event to frontends. This also ensures transparency in the process.
+
         emit Voted(proposalId, msg.sender, support, weight);
     }
 
 /// @ notice execute a proposal after voting ends
 // @notice ensure the voter has not voted already and voting is ongoing.
+// @notice retrieve the Id of the project whose proposal has passed and has been executed => Call ProjectRegistry.sol
+//@notice call GrantVault.sol to release funds to the project
 
     function executeProposal(uint256 proposalId) external {
         Proposal storage p = proposals[proposalId];
@@ -115,11 +126,12 @@ contract IncubatorManager {
         p.executed = true;
 
         if (passed) {
-// @notice retrieve the Id of the project whose proposal has passed and has been executed => Call ProjectRegistry.sol
 
-            ProjectRegistry.Project memory project = registry.getProject(p.projectId);
 
-//@notice call GrantVault.sol to release funds to the project
+         ProjectRegistry.Project memory project = registry.getProject(p.projectId);
+
+
+
             vault.releaseGrant(p.projectId, payable(project.owner), p.amount);
         }
 
@@ -127,12 +139,13 @@ contract IncubatorManager {
     }
 // ============Adminstrative/incentives========
 // @ notice reward users for participation
+// @notice call IREP mint() to mint IREP 
 
     function rewardActiveVoter(address voter, uint256 amount) external {
         if (voter == address(0)) revert("Invalid address");
         if (amount == 0) revert("Invalid amount");
 
-// @notice call IREP mint() to mint IREP 
+
         IREP.mint(voter, amount);
     }
 }
