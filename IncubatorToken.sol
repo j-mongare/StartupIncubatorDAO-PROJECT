@@ -8,10 +8,11 @@ import "@openzeppelin/contracts/access/AccessControl.sol";
 // @title Incubation Reputation Token (IREP)
 
 contract IncubatorToken is ERC20, AccessControl {
-    bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
+// @notice hashing the MINTER_ROLE to ensure subsequent minters each have unique identifiers
 
+    bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE"); 
     constructor() ERC20("Incubator Reputation Token", "IREP") {
-        _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
+        _grantRole(DEFAULT_ADMIN_ROLE, msg.sender); // deployer is the default admin
     }
 
     function mint(address to, uint amount) external onlyRole(MINTER_ROLE) {
