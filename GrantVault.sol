@@ -25,12 +25,14 @@ contract GrantVault is ReentrancyGuard, Pausable{
     event ManagerChanged(address indexed oldManager, address indexed newManager);
     event AdminChanged(address indexed oldAdmin, address indexed newAdmin);
 
+
     ///============custom errors=======
     error NotManager();
     error NotAdmin();
     error InsufficientBalance();
     error TransferFailed();
     error DepositMustBeGreaterThanZero();
+
 
     constructor(address _manager, address _admin){ 
         manager= _manager;
@@ -85,7 +87,7 @@ contract GrantVault is ReentrancyGuard, Pausable{
     function emergencyWithdrawETH(address payable to, uint256 amount)external onlyAdmin{
       if(amount > address(this).balance) revert InsufficientBalance();
      
-      unchecked{totalFunds-= amount;}
+      totalFunds -= amount;
 
       (bool success,)= to.call{value: amount}("");
       if(!success)revert TransferFailed();
@@ -121,7 +123,9 @@ function _pauseVault() internal whenNotPaused onlyAdmin {
     // @ notice receive() for direct ETH transfers
 
     receive() external payable{
+
         unchecked{totalFunds += msg.value;}
+
         emit VaultFunded(msg.sender, msg.value);
     }
 // @notice call this function to check the contract's balance
