@@ -19,7 +19,7 @@ event _Transfer(address indexed _from, address indexed to, uint256 amount);
 
     function mint(address to, uint amount) external onlyRole(MINTER_ROLE) {
         _mint(to, amount);
-      address _from = address(0);
-      emit _Transfer(_from, to, amount);
+    
+      emit _Transfer(address(0), to, amount);
     }
 }
