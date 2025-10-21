@@ -71,9 +71,8 @@ contract ProjectRegistry {
     }
 
     function setManager(address newManager) external {
-        if (msg.sender != manager) revert NotManager();
-       if(newManager== address(0)) revert NotManager();
-
+        if (msg.sender != manager && newManager== address(0)) revert NotManager();
+      
         manager = newManager;
     }
 }
